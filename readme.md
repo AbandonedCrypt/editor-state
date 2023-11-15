@@ -62,6 +62,7 @@ public class MyEditor : StatefulEditorWindow
 
   protected override void Init()
   {
+    // StateVar must be assigned in Init()!
     flag = new StateVar<bool>(this, false);
     displayMode = new StateVar<DisplayMode>(this, DisplayMode.Edit);
 
