@@ -1,5 +1,4 @@
 using System;
-using System.Reflection;
 
 namespace AbandonedCrypt.EditorState
 {
@@ -20,8 +19,7 @@ namespace AbandonedCrypt.EditorState
   /// </summary>
   public sealed class StateVar<T>
   {
-    private readonly MethodInfo reRenderMethod;
-    private readonly StatefulEditorWindow stateHost;
+    private readonly IStateHost stateHost;
 
     private T _value;
 
@@ -36,19 +34,17 @@ namespace AbandonedCrypt.EditorState
       }
     }
 
-    public StateVar(StatefulEditorWindow stateHost)
+    public StateVar(IStateHost stateHost)
     {
-      if (stateHost == null)
-      {
-        throw new ArgumentNullException(nameof(stateHost));
-      }
-      this.stateHost = stateHost;
-      reRenderMethod = stateHost.GetType().GetMethod("ReRender", BindingFlags.NonPublic | BindingFlags.Instance);
+      this.stateHost = stateHost ?? throw new ArgumentNullException();
     }
 
     public void ReRenderHost()
     {
-      reRenderMethod.Invoke(stateHost, null);
+      if (stateHost.UseAutomaticStateBatching)
+        stateHost.StateManager.InitiateStateChange();
+      else
+        stateHost.ReRender();
     }
 
     public StateVar(StatefulEditorWindow stateHost, T defaultValue) : this(stateHost)

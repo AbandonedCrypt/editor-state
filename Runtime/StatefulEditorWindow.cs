@@ -25,9 +25,8 @@ namespace AbandonedCrypt.EditorState
     protected VisualElement root;
 
     /// <summary>
-    /// TODO: implement<br/>
     /// will be used to control whether batchmanager takes effect (will limit "framerate")<br/>
-    /// vs using manual Batching [StartBatching() / StopBatching()]
+    /// vs using manual Batching [BatchStateUpdates({...})]
     /// </summary>
     protected bool useAutomaticBatching = false;
 
@@ -37,7 +36,16 @@ namespace AbandonedCrypt.EditorState
     /// </summary>
     protected string uxmlSource = "";
 
-    protected bool batching;
+    private bool _batching;
+    private readonly StateManager _stateManager;
+
+    StateManager IStateHost.StateManager => _stateManager;
+    bool IStateHost.UseAutomaticStateBatching => useAutomaticBatching;
+
+    protected StatefulEditorWindow()
+    {
+      _stateManager = new(this);
+    }
 
     /// <summary>
     /// Perform all your initialization code in here.<br/>
@@ -58,7 +66,7 @@ namespace AbandonedCrypt.EditorState
     /// </summary>
     internal void ReRender()
     {
-      if (batching) return;
+      if (_batching) return;
       Debug.Log("Rerender");
       rootVisualElement.Clear();
       rootVisualElement.Add(m_VisualTreeAsset.Instantiate());
@@ -89,7 +97,7 @@ namespace AbandonedCrypt.EditorState
     private void StartBatching()
     {
       if (useAutomaticBatching) throw new StateUpdateBatchingException("Manual state update batching is prohibited when automatic batching is enabled.");
-      batching = true;
+      _batching = true;
     }
 
     /// <summary>
@@ -97,7 +105,7 @@ namespace AbandonedCrypt.EditorState
     /// </summary>
     private void StopBatching()
     {
-      batching = false;
+      _batching = false;
       ReRender();
     }
 
