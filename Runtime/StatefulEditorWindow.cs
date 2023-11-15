@@ -25,10 +25,11 @@ namespace AbandonedCrypt.EditorState
     protected VisualElement root;
 
     /// <summary>
-    /// will be used to control whether batchmanager takes effect (will limit "framerate")<br/>
-    /// vs using manual Batching [BatchStateUpdates({...})]
+    /// Controls whether automatic state updating batching is used.<br/>
+    /// Manual state update batching is now obsolete and automatic batching is therefore <b>opt-out</b>.<br/><br/>
+    /// <i>Set this to false if you must use manual batching, this should only be necessary if you run into performance issues with automatic batching,<br/>which should basically never happen.</i>
     /// </summary>
-    protected bool useAutomaticBatching = false;
+    protected bool useAutomaticBatching = true;
 
     /// <summary>
     /// undocumented
@@ -119,6 +120,7 @@ namespace AbandonedCrypt.EditorState
     /// All StateVar assignments made in <paramref name="batchOperation"/> will be batched into a single rerender.
     /// </summary>
     /// <param name="batchOperation">Consecutive state variable assignments</param>
+    [Obsolete("Manual state update batching has been superseded by automatic batching. Only use manual batching, if you run into performance issues with useAutomaticBatching = true.")]
     protected void BatchStateUpdates(Action batchOperation)
     {
       StartBatching();
