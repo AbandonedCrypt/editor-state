@@ -31,6 +31,11 @@ namespace AbandonedCrypt.EditorState
     protected bool useAutomaticBatching = false;
 
     /// <summary>
+    /// undocumented
+    /// </summary>
+    protected Action reRenderHook;
+
+    /// <summary>
     /// Path to the UXML file containing the desired root visual tree of this editor.<br/>
     /// <i>Starting at "Assets/..."</i>
     /// </summary>
@@ -39,6 +44,7 @@ namespace AbandonedCrypt.EditorState
     private bool _batching;
     private readonly StateManager _stateManager;
 
+    //internals
     StateManager IStateHost.StateManager => _stateManager;
     bool IStateHost.UseAutomaticStateBatching => useAutomaticBatching;
 
@@ -67,7 +73,7 @@ namespace AbandonedCrypt.EditorState
     internal void ReRender()
     {
       if (_batching) return;
-      Debug.Log("Rerender");
+      reRenderHook?.Invoke();
       rootVisualElement.Clear();
       rootVisualElement.Add(m_VisualTreeAsset.Instantiate());
       Render();
