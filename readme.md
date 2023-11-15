@@ -70,8 +70,13 @@ public class MyEditor : StatefulEditorWindow
 
   protected override void Render()
   {
+    // the root visual element is available as root or rootVisualElement
     rootVisualElement.Add(new Label("Top Label"));
     root.Add(new Label("Bottom Label"));
+
+    // modifying a StateVar will re-render your editor
+    if(flag) //StateVars implicitly convert to their assigned type
+      root.Add(new Label("I will be visible when 'flag' is assigned 'true'"));
   }
 }
 ```
@@ -115,4 +120,3 @@ color.OnChange(value => someObject.ErrorColor = value);
 
 - The `uxmlSource` instance field allows you to specify the path to a `uxml` file, serving as the new root for the editor's element tree `<sup><sub>`*(Experimental)*`</sub></sup>`
 - Concrete plans to abstract away more boilerplate from the window creation exist, and will likely be realized soon™.
--
