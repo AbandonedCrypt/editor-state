@@ -1,7 +1,9 @@
 namespace AbandonedCrypt.EditorState
 {
-  internal interface IStateHost
+  public interface IStateHost
   {
-    void ReRender();
+    internal void ReRender();
+    internal StateManager StateManager { get; }
+    internal bool UseAutomaticStateBatching { get; }
   }
 }

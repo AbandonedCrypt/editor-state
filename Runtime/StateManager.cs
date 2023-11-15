@@ -4,7 +4,7 @@ namespace AbandonedCrypt.EditorState
 {
   internal class StateManager
   {
-    private IStateHost stateHost;
+    private readonly IStateHost stateHost;
 
     private bool defering;
 
@@ -31,9 +31,9 @@ namespace AbandonedCrypt.EditorState
 
     private void Flush(object state)
     {
-      stateHost.ReRender();
       timer.Dispose();
       defering = false;
+      stateHost.ReRender();
     }
   }
 }
