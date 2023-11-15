@@ -121,5 +121,5 @@ color.OnChange(value => someObject.ErrorColor = value);
 
 ### Additional
 
-- The `uxmlSource` instance field allows you to specify the path to a `uxml` file, serving as the new root for the editor's element tree `<sup><sub>`*(Experimental)*`</sub></sup>`
+- The `uxmlSource` instance field allows you to specify the path to a `uxml` file, serving as the new root for the editor's element tree *(Experimental)*
 - Concrete plans to abstract away more boilerplate from the window creation exist, and will likely be realized soon™.
