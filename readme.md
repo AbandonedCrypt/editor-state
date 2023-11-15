@@ -84,7 +84,7 @@ public class MyEditor : StatefulEditorWindow
 
 ## Features
 
-#### State Batching
+### State Batching
 
 The system now supports automatic state batching by default. State modifications no longer trigger immediate re-renders; instead, they are grouped together, combining consecutive state changes into a single re-render. This aims to simplify the update workflow by automatically supporting non-continuous but consecutive updates and reducing unnecessary re-renders.
 
@@ -100,7 +100,8 @@ BatchStateUpdates(() => {
 ```
 
 
-#### Generic Value Binding
+
+### Generic Value Binding
 
 A generic extension method for `VisualElements` is provided, that offers a declarative `OnChange` method on all derived elements, specifically useful for any type of input field.
 
@@ -117,7 +118,8 @@ color.OnChange(value => someObject.ErrorColor = value);
 ```
 
 
-##### Additional
+
+### Additional
 
 - The `uxmlSource` instance field allows you to specify the path to a `uxml` file, serving as the new root for the editor's element tree `<sup><sub>`*(Experimental)*`</sub></sup>`
 - Concrete plans to abstract away more boilerplate from the window creation exist, and will likely be realized soon™.
