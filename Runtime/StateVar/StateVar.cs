@@ -1,4 +1,5 @@
 using System;
+using Codice.Client.Common;
 
 namespace AbandonedCrypt.EditorState
 {
@@ -17,11 +18,12 @@ namespace AbandonedCrypt.EditorState
   /// as it is not tested against any other editor-flows than basic utility editors.
   /// </b>
   /// </summary>
-  public sealed class StateVar<T>
+  public sealed class StateVar<T> : IStateVar
   {
     private readonly IStateHost stateHost;
 
     private T _value;
+    private string _name;
 
     public T Value
     {
@@ -34,7 +36,9 @@ namespace AbandonedCrypt.EditorState
       }
     }
 
-    public StateVar(IStateHost stateHost)
+    public string Name { get => _name; }
+
+    private StateVar(IStateHost stateHost)
     {
       this.stateHost = stateHost ?? throw new ArgumentNullException();
     }
@@ -50,6 +54,14 @@ namespace AbandonedCrypt.EditorState
     public StateVar(StatefulEditorWindow stateHost, T defaultValue) : this(stateHost)
     {
       _value = defaultValue;
+    }
+
+    public StateVar(StatefulEditorWindow stateHost, T defaultValue, string name) : this(stateHost)
+    {
+      _value = defaultValue;
+      _name = name;
+
+      stateHost.StateRepository.Add(this);
     }
 
     public void Set(T value) => Value = value;
@@ -80,5 +92,7 @@ namespace AbandonedCrypt.EditorState
     {
       return base.GetHashCode();
     }
+
+    public IStateHost GetStateHost() => stateHost;
   }
 }

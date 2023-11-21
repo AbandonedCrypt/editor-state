@@ -24,6 +24,8 @@ The `StatefulEditorWindow` is an abstraction layer over Unity's `EditorWindow`. 
 
 It establishes a state-driven rendering paradigm, where UI logic is encapsulated within the render method. Re-renders are triggered by changes to stateful variables, to create a straightforward development flow.
 
+It is also called `StateHost`, as the core driving 'engine' behind this framework.
+
 ### `StateVar`
 
 A stateful variable of generic type, comparable to `useState` in a single field. Modifying it will invoke a re-render.
@@ -84,9 +86,9 @@ public class MyEditor : StatefulEditorWindow
 
 ## Features
 
-### State Batching
+### State Update Batching
 
-The system now supports automatic state batching by default. State modifications no longer trigger immediate re-renders; instead, they are grouped together, combining consecutive state changes into a single re-render. This aims to simplify the update workflow by automatically supporting non-continuous but consecutive updates and reducing unnecessary re-renders.
+The system now supports automatic state update batching by default. State modifications no longer trigger immediate re-renders; instead, they are grouped together, combining consecutive state changes into a single re-render. This aims to simplify the update workflow by automatically supporting non-continuous but consecutive updates and reducing unnecessary re-renders.
 
 ###### Manual Batching
 
@@ -99,6 +101,65 @@ BatchStateUpdates(() => {
 }))
 ```
 
+
+### State Repository
+
+In order to avoid having to pass down state vars by "prop-drilling" in increasingly bloated constructors or method parameters, or breaking your encapsulation by having to make `StateVar` public to access them from children,  `StateVar` can now be initialized as *Repository State Variables*. That means they will automatically be added to the `StateRepository` of their state host, but continue to work as expected. You create a *Repository State Variable* by giving it a `name` at instantiation.
+
+```C#
+private StateVar<float> _someFloat = new(parent, .1f, "SomeFloat");
+```
+
+After which it will be available in the parents' state repository for retrieval in any child.
+
+```C#
+StateVar<float> someFloat = parent.StateRepository.Retrieve<float>("SomeFloat");
+```
+
+This way you will now only need to pass down either the State Host (StatefulEditorWindow, as `IStateHost` e.g.) or the `StateRepository` itself.
+
+Each StatefulEditorWindow has a dedicated state repository, to which all of its associated StateVars will be added, as long as they are *repository state vars*.
+
+#### StateContext as a static Repository locator
+
+*You can now use a static service locator `StateContext` to retrieve a state repository instance from the parent without having to pass down any instance of  `IStateHost` or `StateRepository`*
+
+You can find your editor's StateRepository by querying the `StateContext` for the name of your editor from any child component.
+
+```C#
+// assume your editor is called MyEditor
+var stateRepository = StateContext.Find("MyEditor");
+
+// or more future-proof
+var stateRepository = StateContext.Find(typeof(MyEditor).Name);
+
+// retrieve your StateVar from the repository
+var someFloat = stateRepository.Retrieve<float>("SomeFloat");
+```
+
+---
+
+*Draw-backs by nature of the design are, that stale references to StateVars will not reliably be garbage collected on time. So a reference to a stale StateVar, from an inactive sub-host, might still return its instance. This side-effect is negligible though, if StateVar etiquette is followed* (*don't try to access, what should not be available in your child hierarchy*).
+
+*Yes, there is no access control, so you could use this to re-render / modify any editor window from any other editor window. Should you? No idea. Is it kind of cool? I guess so.*
+
+
+### StateHost Locator
+
+Passing a state host around to e.g. create `StateVar` at lower hierarchy levels is cumbersome. That's why you can just use the `StateHostLocator` to find a state host at any level in your code.
+
+State host registration to the locator is automatically managed by your `StatefulEditorWindow`.
+
+```C#
+// Find by string name of your editor
+var stateHost = StateHostLocator.Find("MyEditor");
+
+// or more future proof
+var stateHost = StateHostLocator.Find(typeof(MyEditor).Name);
+
+// use your state host however you want then
+var newStatefulFloat = new StateVar<float>(stateHost, .5f);
+```
 
 
 ### Generic Value Binding
@@ -116,8 +177,6 @@ var color = new ColorField();
 color.value = someObject.ErrorColor;
 color.OnChange(value => someObject.ErrorColor = value);
 ```
-
-
 
 ### Additional
 

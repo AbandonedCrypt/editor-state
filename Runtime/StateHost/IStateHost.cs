@@ -5,5 +5,6 @@ namespace AbandonedCrypt.EditorState
     internal void ReRender();
     internal StateManager StateManager { get; }
     internal bool UseAutomaticStateBatching { get; }
+    public StateRepository StateRepository { get; }
   }
 }

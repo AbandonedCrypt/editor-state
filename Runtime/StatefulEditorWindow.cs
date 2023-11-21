@@ -7,7 +7,7 @@ namespace AbandonedCrypt.EditorState
 {
   /// <summary>
   /// Stateful editor abstraction allowing for <b>StateVar</b> to be used and controlling re-renders.<br/>
-  /// Also provides a more clear editor logic structure.<br/><br/>
+  /// Also provides a more intuitive editor logic structure.<br/><br/>
   /// <i>Replaces</i> <b>EditorWindow</b> <i>in your custom editor inheritance.</i>
   /// <br/><br/><br/>
   /// <i>!Developers notice!<br/>
@@ -20,16 +20,10 @@ namespace AbandonedCrypt.EditorState
   /// </summary>
   public abstract class StatefulEditorWindow : EditorWindow, IStateHost
   {
+    // & core
     [SerializeField]
     protected VisualTreeAsset m_VisualTreeAsset = default;
     protected VisualElement root;
-
-    /// <summary>
-    /// Controls whether automatic state updating batching is used.<br/>
-    /// Manual state update batching is now obsolete and automatic batching is therefore <b>opt-out</b>.<br/><br/>
-    /// <i>Set this to false if you must use manual batching, this should only be necessary if you run into performance issues with automatic batching,<br/>which should basically never happen.</i>
-    /// </summary>
-    protected bool useAutomaticBatching = true;
 
     /// <summary>
     /// undocumented
@@ -42,16 +36,29 @@ namespace AbandonedCrypt.EditorState
     /// </summary>
     protected string uxmlSource = "";
 
+
+    // & State Management
+    /// <summary>
+    /// Controls whether automatic state updating batching is used.<br/>
+    /// Manual state update batching is now obsolete and automatic batching is therefore <b>opt-out</b>.<br/><br/>
+    /// <i>Set this to false if you must use manual batching, this should only be necessary if you run into performance issues with automatic batching,<br/>which should basically never happen.</i>
+    /// </summary>
+    protected bool useAutomaticBatching = true;
+    bool IStateHost.UseAutomaticStateBatching => useAutomaticBatching;
+
     private bool _batching;
     private readonly StateManager _stateManager;
-
-    //internals
     StateManager IStateHost.StateManager => _stateManager;
-    bool IStateHost.UseAutomaticStateBatching => useAutomaticBatching;
+
+    // & State Repository
+    private readonly StateRepository _stateRepository = new();
+    public StateRepository StateRepository => _stateRepository;
 
     protected StatefulEditorWindow()
     {
       _stateManager = new(this);
+      StateContext.Register(this.GetType().Name, _stateRepository);
+      StateHostLocator.Register(this);
     }
 
     /// <summary>
@@ -66,6 +73,18 @@ namespace AbandonedCrypt.EditorState
     /// <i>Runs on re-render, or automatically after a <b><see cref="StateVar">StateVar</see></b> change.</i> 
     /// </summary>
     protected abstract void Render();
+
+    /// <summary>
+    /// Perform any cleanup logic here, will be called by OnDestroy().
+    /// </summary>
+    protected virtual void OnClose() { }
+
+    private void OnDestroy()
+    {
+      StateContext.Unregister(this.GetType().Name);
+      StateHostLocator.Unregister(this);
+      OnClose();
+    }
 
     /// <summary>
     /// Reconstructs the whole editor's DOM.<br/><br/>
