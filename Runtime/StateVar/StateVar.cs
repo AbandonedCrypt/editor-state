@@ -30,7 +30,7 @@ namespace AbandonedCrypt.EditorState
       get => _value;
       set
       {
-        if (_value.Equals(value)) return;
+        if (_value != null && _value.Equals(value)) return;
         _value = value;
         ReRenderHost();
       }
