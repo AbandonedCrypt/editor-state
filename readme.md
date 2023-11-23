@@ -138,7 +138,11 @@ var someFloat = stateRepository.Retrieve<float>("SomeFloat");
 
 ---
 
-*Draw-backs by nature of the design are, that stale references to StateVars will not reliably be garbage collected on time. So a reference to a stale StateVar, from an inactive sub-host, might still return its instance. This side-effect is negligible though, if StateVar etiquette is followed* (*don't try to access, what should not be available in your child hierarchy*).
+*Disclaimer:* 
+
+*By nature of the solution, stale references to StateVars will not reliably be garbage collected on time. So a retrieve-call by name to a stale StateVar, from an inactive sub-host, might still return a (null-) reference, if not overwritten by a re-render.*
+
+*If you create a StateVar with an identical name to another, at a later point in the hierarchy, the latter will overwrite the former in the state repository, so make sure you choose unique names.*
 
 *Yes, there is no access control, so you could use this to re-render / modify any editor window from any other editor window. Should you? No idea. Is it kind of cool? I guess so.*
 
