@@ -10,6 +10,8 @@ namespace AbandonedCrypt.EditorState
     internal void Add(IStateVar stateVar)
     {
       Cleanup();
+      if (repository.ContainsKey(stateVar.Name))
+        repository.Remove(stateVar.Name);
       repository.Add(stateVar.Name, new WeakReference<IStateVar>(stateVar));
     }
 
