@@ -101,7 +101,6 @@ BatchStateUpdates(() => {
 }))
 ```
 
-
 ### State Repository
 
 In order to avoid having to pass down state vars by "prop-drilling" in increasingly bloated constructors or method parameters, or breaking your encapsulation by having to make `StateVar` public to access them from children,  `StateVar` can now be initialized as *Repository State Variables*. That means they will automatically be added to the `StateRepository` of their state host, but continue to work as expected. You create a *Repository State Variable* by giving it a `name` at instantiation.
@@ -143,10 +142,9 @@ var someFloat = stateRepository.Retrieve<float>("SomeFloat");
 
 *Yes, there is no access control, so you could use this to re-render / modify any editor window from any other editor window. Should you? No idea. Is it kind of cool? I guess so.*
 
-
 ### StateHost Locator
 
-Passing a state host around to e.g. create `StateVar` at lower hierarchy levels is cumbersome. That's why you can just use the `StateHostLocator` to find a state host at any level in your code.
+Passing a state host around to e.g. create `StateVar` at lower hierarchy levels¹ is cumbersome. That's why you can just use the `StateHostLocator` to find a state host at any level in your code.
 
 State host registration to the locator is automatically managed by your `StatefulEditorWindow`.
 
@@ -160,6 +158,8 @@ var stateHost = StateHostLocator.Find(typeof(MyEditor).Name);
 // use your state host however you want then
 var newStatefulFloat = new StateVar<float>(stateHost, .5f);
 ```
+
+*¹ Disclaimer: Lower child hierarchy level `StateVar` are not functionally supported yet. They will be overwritten and recreated at rerender. It's on the board with high priority, though.*
 
 
 ### Generic Value Binding
