@@ -2,7 +2,7 @@ namespace AbandonedCrypt.EditorState
 {
   public interface IStateVar
   {
-    string Name { get; }
+    internal string Name { get; }
     IStateHost GetStateHost();
   }
 }
