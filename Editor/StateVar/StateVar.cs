@@ -28,7 +28,7 @@ namespace AbandonedCrypt.EditorState
     public T Value
     {
       get => _value;
-      set
+      private set
       {
         if (_value != null && _value.Equals(value)) return;
         _value = value;
@@ -36,7 +36,9 @@ namespace AbandonedCrypt.EditorState
       }
     }
 
-    public string Name { get => _name; }
+    internal string Name { get => _name; }
+
+    string IStateVar.Name => Name;
 
     private StateVar(IStateHost stateHost)
     {
@@ -75,11 +77,19 @@ namespace AbandonedCrypt.EditorState
 
     public static bool operator ==(StateVar<T> left, T right)
     {
+      if (left == null)
+        throw new StateVarNotInitializedException("Can not implicitly compare StateVar value, as it has not been initialized. Please make sure your StateVar has been initialized in Init().");
+      if (right == null)
+        return left.Value == null;
       return left.Value.Equals(right);
     }
 
     public static bool operator !=(StateVar<T> left, T right)
     {
+      if (left == null)
+        throw new StateVarNotInitializedException("Can not implicitly compare StateVar value, as it has not been initialized. Please make sure your StateVar has been initialized in Init().");
+      if (right == null)
+        return left.Value != null;
       return !left.Value.Equals(right);
     }
 
@@ -94,5 +104,10 @@ namespace AbandonedCrypt.EditorState
     }
 
     public IStateHost GetStateHost() => stateHost;
+
+    IStateHost IStateVar.GetStateHost()
+    {
+      throw new NotImplementedException();
+    }
   }
 }
