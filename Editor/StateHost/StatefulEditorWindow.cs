@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -18,7 +19,7 @@ namespace AbandonedCrypt.EditorState
   /// as it is not tested against any other editor-flows than my own.
   /// </b>
   /// </summary>
-  public abstract class StatefulEditorWindow : EditorWindow, IStateHost
+  public abstract class StatefulEditorWindow : EditorWindow, IStateHost, ITreeHost
   {
     // & core
     [SerializeField]
@@ -36,7 +37,6 @@ namespace AbandonedCrypt.EditorState
     /// </summary>
     protected string uxmlSource = "";
 
-
     // & State Management
     /// <summary>
     /// Controls whether automatic state updating batching is used.<br/>
@@ -53,6 +53,12 @@ namespace AbandonedCrypt.EditorState
     // & State Repository
     private readonly StateRepository _stateRepository = new();
     public StateRepository StateRepository => _stateRepository;
+
+    // & Render Tree
+    private RenderTreeManager renderTreeManager = new();
+
+    internal RenderTreeManager RenderTreeManager => renderTreeManager;
+    RenderTreeManager ITreeHost.RenderTreeManager => renderTreeManager;
 
     protected StatefulEditorWindow()
     {
@@ -78,6 +84,11 @@ namespace AbandonedCrypt.EditorState
     /// Perform any cleanup logic here, will be called by OnDestroy().
     /// </summary>
     protected virtual void OnClose() { }
+
+    protected void AddComponent(EditorComponent component)
+    {
+      renderTreeManager.Nodes.Add(component);
+    }
 
     private void OnDestroy()
     {
