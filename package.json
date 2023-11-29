@@ -1,6 +1,6 @@
 {
   "name": "com.abandonedcrypt.editorstate",
-  "version": "beta-0.2.0",
+  "version": "beta-0.4.0",
   "displayName": "Editor State Framework",
   "description": "A rudimentary and simple, but powerful EditorWindow abstraction, allowing for (loosely) react-like state management and rerendering.",
   "unity": "2022.3",
