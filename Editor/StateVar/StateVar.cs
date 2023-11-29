@@ -53,12 +53,12 @@ namespace AbandonedCrypt.EditorState
         stateHost.ReRender();
     }
 
-    public StateVar(StatefulEditorWindow stateHost, T defaultValue) : this(stateHost)
+    public StateVar(IStateHost stateHost, T defaultValue) : this(stateHost)
     {
       _value = defaultValue;
     }
 
-    public StateVar(StatefulEditorWindow stateHost, T defaultValue, string name) : this(stateHost)
+    public StateVar(IStateHost stateHost, T defaultValue, string name) : this(stateHost)
     {
       _value = defaultValue;
       _name = name;
