@@ -39,6 +39,5 @@ namespace AbandonedCrypt.EditorState
       foreach (var key in keysToRemove)
         repository.Remove(key);
     }
-
   }
 }
