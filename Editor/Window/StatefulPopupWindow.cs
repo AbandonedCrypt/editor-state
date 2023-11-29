@@ -53,12 +53,14 @@ namespace AbandonedCrypt.EditorState
 
     public override void OnOpen()
     {
+      StateContext.Register(GetType().Name, stateRepo);
       Init();
       Render();
     }
 
     public override void OnClose()
     {
+      StateContext.Unregister(GetType().Name);
       OnExit();
     }
 
