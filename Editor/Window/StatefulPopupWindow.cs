@@ -1,4 +1,5 @@
 using UnityEditor;
+using UnityEditor.Build;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -58,6 +59,8 @@ namespace AbandonedCrypt.EditorState
     {
       OnExit();
     }
+
+    public override void OnGUI(Rect rect) { }
 
     public void Close()
     {
