@@ -1,8 +1,22 @@
 # Changelog
 
-### [beta] 0.4.0 - Stateful Popup Window
+### 0.4.0-beta2 - [Hotfix] StateVar Host
 
-0.4.0 adds a popup window abstraction akin to the StatefulEditorWindow, able to render and update using StateVar.
+0.4.0-beta2 is a hotfix allowing StateVar to be initialized with any IStateHost to allow for StatefulPopupWindow to be StateVar host.
+
+**Changes**
+
+- StateVar ctor state host type changed from StatefulEditorWindow to IStateHost.
+
+**Breaking Changes**
+
+- /
+
+---
+
+### 0.4.0-beta1 - Stateful Popup Window
+
+0.4.0-beta1 adds a popup window abstraction akin to the StatefulEditorWindow, able to render and update using StateVar.
 
 **Changes**
 
