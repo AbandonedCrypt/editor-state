@@ -14,6 +14,8 @@ namespace AbandonedCrypt.EditorState
 
     public StateRepository StateRepository => stateRepo;
 
+    protected abstract Vector2 WindowSize { get; }
+
     // & StateHost stuff
     StateManager IStateHost.StateManager => stateManager;
     bool IStateHost.UseAutomaticStateBatching => true;
@@ -36,7 +38,7 @@ namespace AbandonedCrypt.EditorState
 
     public override Vector2 GetWindowSize()
     {
-      return new Vector2(200, 100);
+      return WindowSize;
     }
 
     public void Show(Rect position)
