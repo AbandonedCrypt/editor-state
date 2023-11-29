@@ -9,7 +9,7 @@ namespace AbandonedCrypt.EditorState
 {
   public abstract class StatefulPopupWindow<T> : StatefulPopupWindow
   {
-    protected Action<T> callback;
+    protected abstract Action<T> Callback { get; set; }
 
     public static void Show<U>(Rect position, Action<T> callback) where U : StatefulPopupWindow<T>, new()
     {
@@ -23,7 +23,7 @@ namespace AbandonedCrypt.EditorState
     private void SetCallback(Action<T> cb)
     {
       {
-        callback = cb;
+        Callback = cb;
       }
     }
 
