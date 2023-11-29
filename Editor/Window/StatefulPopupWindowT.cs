@@ -1,9 +1,5 @@
-using System.Globalization;
 using System;
-using UnityEditor;
 using UnityEngine;
-using UnityEngine.UIElements;
-using UnityEditor.Build;
 
 namespace AbandonedCrypt.EditorState
 {

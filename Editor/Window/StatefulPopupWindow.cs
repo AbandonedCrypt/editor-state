@@ -1,5 +1,4 @@
 using UnityEditor;
-using UnityEditor.Build;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -53,6 +52,7 @@ namespace AbandonedCrypt.EditorState
 
     public override void OnOpen()
     {
+      editorWindow.rootVisualElement.Add(root);
       StateContext.Register(GetType().Name, stateRepo);
       Init();
       Render();
