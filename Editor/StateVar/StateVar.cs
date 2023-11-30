@@ -5,18 +5,9 @@ namespace AbandonedCrypt.EditorState
 {
   /// <summary>
   /// Stateful variable that re-renders the provided editor window when its value changes.<br/><br/>
-  /// - <i>It will not perform a re-render if a value has been assigned, but that value is identical to the previous one.</i>
-  /// <br/><br/>
   /// - <i>You</i> <b>must</b> <i>instantiate this in Init().</i>
   /// <br/><br/>
   /// - implicitly converts and compares to the target type<br/><br/>
-  /// <i>!Developers notice!<br/>
-  /// This is a highly experimental, rudimentary, personal project, aimed at a specific use-case.<br/>
-  /// There is no focus on safety, best practices or any consideration of possible side effects.<br/>
-  /// It is merely a highly specific tool to aid a personal use case.</i><br/><br/>
-  /// <b>Using it as a general purpose solution is almost guaranteed to run you into bugs galore,<br/>
-  /// as it is not tested against any other editor-flows than basic utility editors.
-  /// </b>
   /// </summary>
   public sealed class StateVar<T> : IStateVar
   {
@@ -30,7 +21,6 @@ namespace AbandonedCrypt.EditorState
       get => _value;
       private set
       {
-        if (_value != null && _value.Equals(value)) return;
         _value = value;
         ReRenderHost();
       }

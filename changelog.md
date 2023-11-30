@@ -1,5 +1,19 @@
 # Changelog
 
+### 0.4.0-beta3 - Remove StateVar Rerender Restriction
+
+0.4.0-beta3 removes a useless restriction on StateVar, where it would not cause a rerender if assigned a value equal to its current one.
+
+**Changes**
+
+- Remove early exit on `StateVar.Set()` if the set-value is equal to the current one.
+
+**Breaking Changes**
+
+- /
+
+---
+
 ### 0.4.0-beta2 - [Hotfix] StateVar Host
 
 0.4.0-beta2 is a hotfix allowing StateVar to be initialized with any IStateHost to allow for StatefulPopupWindow to be StateVar host.
