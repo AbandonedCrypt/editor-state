@@ -29,9 +29,16 @@ namespace AbandonedCrypt.EditorState
       GetRootVisualElement(rootElementName);
     }
 
+    public TreeComponent(VisualElement componentRoot) : this()
+    {
+      ValidateComponentRoot(componentRoot);
+      root = componentRoot;
+    }
+
     internal TreeComponent()
     {
       Init();
+      InitialRender();
     }
 
     ~TreeComponent()
@@ -45,16 +52,21 @@ namespace AbandonedCrypt.EditorState
 
     protected void AddComponent(TreeComponent component)
     {
-      Children.Add(component);
       component.Parent = this;
+      Children.Add(component);
     }
 
     private void GetRootVisualElement(string rootElementName)
     {
       root = Parent.rootVisualElement.Q<VisualElement>(rootElementName);
-      if (root == null)
-        throw new ComponentRootNotFoundException($"A VisualElement with the name {rootElementName} could not be found in the provided element tree.");
-      if (root.GetDepth() >= Parent.rootVisualElement.GetDepth())
+      ValidateComponentRoot(root);
+    }
+
+    private void ValidateComponentRoot(VisualElement componentRoot)
+    {
+      if (componentRoot == null)
+        throw new ComponentRootNotFoundException($"The provided VisualElement could not be found in the parent element tree.");
+      if (componentRoot.GetDepth() >= Parent.rootVisualElement.GetDepth())
         throw new ComponentRootHierarchyException(
           "Invalid Component Hierarchy: The root element of a component must be a descendant of the parent component's root element.\n" +
           "The current component root element is positioned higher in the element tree than its parent component. " +
