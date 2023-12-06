@@ -1,6 +1,6 @@
 {
   "name": "com.abandonedcrypt.editorstate",
-  "version": "beta-1.0.0",
+  "version": "1.0.0-beta1",
   "displayName": "Editor State Framework",
   "description": "!Highly experimental beta version! - Incorporates a component render tree, any-level persistent state vars and more. Updates will break your code!",
   "unity": "2022.3",

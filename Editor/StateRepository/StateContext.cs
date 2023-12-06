@@ -16,14 +16,14 @@ namespace AbandonedCrypt.EditorState
     internal static void Unregister(string name)
     {
       if (!repositories.ContainsKey(name))
-        throw new RepositoryNotFoundException("A StateRepository with the name '{name}' has not been registered.");
+        throw new RepositoryNotFoundException($"A StateRepository with the name '{name}' has not been registered.");
       repositories.Remove(name);
     }
 
     public static StateRepository Find(string name)
     {
       if (!repositories.ContainsKey(name))
-        throw new RepositoryNotFoundException("A StateRepository with the name '{name}' has not been registered.");
+        throw new RepositoryNotFoundException($"A StateRepository with the name '{name}' has not been registered.");
       return repositories[name];
     }
   }

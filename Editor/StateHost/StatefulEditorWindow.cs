@@ -63,7 +63,7 @@ namespace AbandonedCrypt.EditorState
     protected StatefulEditorWindow()
     {
       _stateManager = new(this);
-      StateContext.Register(this.GetType().Name, _stateRepository);
+      StateContext.Register(GetType().Name, _stateRepository);
       StateHostLocator.Register(this);
     }
 
