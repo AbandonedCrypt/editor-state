@@ -4,12 +4,16 @@ using UnityEngine.UIElements;
 
 namespace AbandonedCrypt.EditorState
 {
-  public abstract class EditorComponent : IRenderTreeNode
+  public abstract class TreeComponent : IRenderTreeNode
   {
+    internal Guid Guid { get; } = Guid.NewGuid();
+
     internal IRenderTreeNode Parent { get; private set; }
     internal List<IRenderTreeNode> Children { get; } = new();
     internal List<IRenderTreeNode> StubNodes { get; } = new();
+
     internal bool IsDirty { get; set; }
+    internal VisualElement renderedComponent;
 
     protected VisualElement root;
 
@@ -17,21 +21,29 @@ namespace AbandonedCrypt.EditorState
     IRenderTreeNode IRenderTreeNode.Parent { get => Parent; set => Parent = value; }
     List<IRenderTreeNode> IRenderTreeNode.Children { get => Children; }
 
-    public EditorComponent(string rootElementName) : this()
+    bool IRenderTreeNode.IsDirty => IsDirty;
+    Guid IRenderTreeNode.Guid => Guid;
+
+    public TreeComponent(string rootElementName) : this()
     {
       GetRootVisualElement(rootElementName);
     }
 
-    private EditorComponent()
+    internal TreeComponent()
     {
       Init();
     }
 
+    ~TreeComponent()
+    {
+      OnDestroy();
+    }
+
     protected abstract void Init();
 
-    protected abstract void Render();
+    protected abstract VisualElement Render();
 
-    protected void AddComponent(EditorComponent component)
+    protected void AddComponent(TreeComponent component)
     {
       Children.Add(component);
       component.Parent = this;
@@ -50,17 +62,22 @@ namespace AbandonedCrypt.EditorState
           );
     }
 
+    private void OnDestroy()
+    {
+      _ = Parent.Children.RemoveAll(child => Guid.Equals(child.Guid, Guid));
+    }
+
     internal void InitialRender()
     {
-      Render();
-      GetStubNodes();
+      renderedComponent = Render();
+      // GetStubNodes();
     }
 
     internal void ReRender()
     {
-      ClearAffectedElements();
-      Render();
-      GetStubNodes();
+      ClearTree();
+      renderedComponent = Render();
+      // GetStubNodes();
     }
 
     /// <summary>
@@ -72,7 +89,7 @@ namespace AbandonedCrypt.EditorState
       TraverseDown((node) => node.SetDirty());
     }
 
-    private void ClearAffectedElements()
+    private void ClearTree()
     {
       root.Clear();
     }
