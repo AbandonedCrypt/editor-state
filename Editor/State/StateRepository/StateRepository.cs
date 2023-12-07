@@ -15,7 +15,7 @@ namespace AbandonedCrypt.EditorState
       repository.Add(stateVar.Name, new WeakReference<IStateVar>(stateVar));
     }
 
-    public StateVar<T> Retrieve<T>(string name)
+    private StateVar<T> Retrieve<T>(string name, bool priv)
     {
       Cleanup();
       if (repository.TryGetValue(name, out var weakReference))
@@ -27,6 +27,34 @@ namespace AbandonedCrypt.EditorState
       }
 
       throw new StateVarNotFoundException($"A StateVar with the name '{name}' was not found in the StateRepository, has a different type, or has been garbage collected.");
+    }
+
+    public StateVar<T> Retrieve<T>(string name)
+    {
+      var stateVar = Retrieve<T>(name, true);
+      if (stateVar.ComponentLevel)
+      {
+        throw new StateVarInvalidAccessException(
+          "Invalid StateVar access. StateVar was initialized inside a component and may only be retrieved from inside such - and only with a component reference.\nIf you are accessing it from within a component, please use the respective `Retrieve<T>` overload."
+        );
+      }
+      return stateVar;
+    }
+
+    public StateVar<T> Retrieve<T>(string name, IRenderTreeNode host)
+    {
+      var stateVar = Retrieve<T>(name, true);
+
+      if (stateVar.ComponentLevel && host.HierarchyDepth >= stateVar.ComponentHierarchyLevel)
+      {
+        throw new StateVarInvalidAccessException(
+          "Invalid StateVar access. StateVar was declared lower in the component tree, than the component trying to access it."
+          );
+      }
+
+      stateVar.SubscribeComponent(host);
+      host.StateVars.Add(stateVar);
+      return stateVar;
     }
 
     private void Cleanup()

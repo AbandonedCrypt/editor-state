@@ -4,30 +4,45 @@ using UnityEngine.UIElements;
 
 namespace AbandonedCrypt.EditorState
 {
-  public abstract class StatefulPopupWindow : PopupWindowContent, IStateHost
+  public abstract class StatefulPopupWindow : PopupWindowContent, IStateHost, ITreeHost
   {
     protected VisualElement root = new();
 
     private readonly StateRepository stateRepo = new();
     private readonly StateManager stateManager;
+    private readonly RenderTreeManager renderTreeManager;
 
     public StateRepository StateRepository => stateRepo;
 
     protected abstract Vector2 WindowSize { get; }
+    protected bool useRenderTree = false;
 
     // & StateHost stuff
     StateManager IStateHost.StateManager => stateManager;
     bool IStateHost.UseAutomaticStateBatching => true;
     StateRepository IStateHost.StateRepository => stateRepo;
 
+    RenderTreeManager ITreeHost.RenderTreeManager => renderTreeManager;
+    bool ITreeHost.UseRenderTree => useRenderTree;
+
+    VisualElement ITreeHost.RootVisualElement => root;
+
     public StatefulPopupWindow()
     {
+      renderTreeManager = new();
       stateManager = new(this);
     }
 
     protected abstract void Init();
     protected abstract void Render();
     protected abstract void OnExit();
+
+    protected void AddComponent(EditorComponent component)
+    {
+      component.RootStateHost = this;
+      component.Initialize();
+      renderTreeManager.AddNode(component);
+    }
 
     internal void ReRender()
     {
@@ -53,6 +68,7 @@ namespace AbandonedCrypt.EditorState
     public override void OnOpen()
     {
       editorWindow.rootVisualElement.Add(root);
+      renderTreeManager.Initialize(this);
       StateContext.Register(GetType().Name, stateRepo);
       Init();
       Render();
@@ -75,6 +91,11 @@ namespace AbandonedCrypt.EditorState
     void IStateHost.ReRender()
     {
       ReRender();
+    }
+
+    void ITreeHost.AddComponent(IRenderTreeNode component)
+    {
+      AddComponent((EditorComponent)component);
     }
   }
 }

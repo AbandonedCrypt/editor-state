@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Codice.Client.Common;
 
 namespace AbandonedCrypt.EditorState
@@ -13,8 +14,12 @@ namespace AbandonedCrypt.EditorState
   {
     private readonly IStateHost stateHost;
 
+    private readonly List<IRenderTreeNode> implementingComponents = new();
+
     private T _value;
     private string _name;
+    public bool ComponentLevel { get; private set; } = false;
+    public int ComponentHierarchyLevel { get; private set; }
 
     public T Value
     {
@@ -35,14 +40,6 @@ namespace AbandonedCrypt.EditorState
       this.stateHost = stateHost ?? throw new ArgumentNullException();
     }
 
-    public void ReRenderHost()
-    {
-      if (stateHost.UseAutomaticStateBatching)
-        stateHost.StateManager.InitiateStateChange();
-      else
-        stateHost.ReRender();
-    }
-
     public StateVar(IStateHost stateHost, T defaultValue) : this(stateHost)
     {
       _value = defaultValue;
@@ -56,7 +53,55 @@ namespace AbandonedCrypt.EditorState
       stateHost.StateRepository.Add(this);
     }
 
+    public StateVar(IRenderTreeNode stateHost, T defaultValue) : this(stateHost.RootStateHost)
+    {
+      _value = defaultValue;
+      ComponentLevel = true;
+      ComponentHierarchyLevel = stateHost.HierarchyDepth;
+
+      stateHost.StateVars.Add(this);
+      SubscribeComponent(stateHost);
+    }
+
+    public StateVar(IRenderTreeNode stateHost, T defaultValue, string name) : this(stateHost.RootStateHost)
+    {
+      _value = defaultValue;
+      _name = name;
+      ComponentLevel = true;
+      ComponentHierarchyLevel = stateHost.HierarchyDepth;
+
+      stateHost.StateVars.Add(this);
+      SubscribeComponent(stateHost);
+
+      stateHost.RootStateHost.StateRepository.Add(this);
+    }
+
     public void Set(T value) => Value = value;
+
+    public void ReRenderHost()
+    {
+      if (stateHost.UseRenderTree)
+      {
+        implementingComponents.ForEach(cmp => cmp.SetDirty());
+        stateHost.RenderTreeManager.InitiateRender();
+        return;
+      }
+
+      if (stateHost.UseAutomaticStateBatching)
+        stateHost.StateManager.InitiateStateChange();
+      else
+        stateHost.ReRender();
+    }
+
+    internal void SubscribeComponent(IRenderTreeNode component)
+    {
+      implementingComponents.Add(component);
+    }
+
+    internal void UnsubscribeComponent(IRenderTreeNode component)
+    {
+      implementingComponents.Remove(component);
+    }
 
     public override bool Equals(object obj)
     {
@@ -95,9 +140,8 @@ namespace AbandonedCrypt.EditorState
 
     public IStateHost GetStateHost() => stateHost;
 
-    IStateHost IStateVar.GetStateHost()
-    {
-      throw new NotImplementedException();
-    }
+    IStateHost IStateVar.GetStateHost() => GetStateHost();
+
+    void IStateVar.UnsubscribeComponent(IRenderTreeNode component) => UnsubscribeComponent(component);
   }
 }

@@ -1,24 +1,10 @@
 using System;
-using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace AbandonedCrypt.EditorState
 {
-  /// <summary>
-  /// Stateful editor abstraction allowing for <b>StateVar</b> to be used and controlling re-renders.<br/>
-  /// Also provides a more intuitive editor logic structure.<br/><br/>
-  /// <i>Replaces</i> <b>EditorWindow</b> <i>in your custom editor inheritance.</i>
-  /// <br/><br/><br/>
-  /// <i>!Developers notice!<br/>
-  /// This is a highly experimental, rudimentary, personal project, aimed at a specific use-case.<br/>
-  /// There is no focus on safety, best practices or any consideration of possible side effects.<br/>
-  /// It is merely a highly specific tool to aid a personal use case.</i><br/><br/>
-  /// <b>Using it as a general purpose solution is almost guaranteed to run you into bugs galore,<br/>
-  /// as it is not tested against any other editor-flows than my own.
-  /// </b>
-  /// </summary>
   public abstract class StatefulEditorWindow : EditorWindow, IStateHost, ITreeHost
   {
     // & core
@@ -46,6 +32,8 @@ namespace AbandonedCrypt.EditorState
     protected bool useAutomaticBatching = true;
     bool IStateHost.UseAutomaticStateBatching => useAutomaticBatching;
 
+    protected bool useRenderTree = false;
+
     private bool _batching;
     private readonly StateManager _stateManager;
     StateManager IStateHost.StateManager => _stateManager;
@@ -55,14 +43,21 @@ namespace AbandonedCrypt.EditorState
     public StateRepository StateRepository => _stateRepository;
 
     // & Render Tree
-    private RenderTreeManager renderTreeManager = new();
+    private readonly RenderTreeManager renderTreeManager;
 
     internal RenderTreeManager RenderTreeManager => renderTreeManager;
     RenderTreeManager ITreeHost.RenderTreeManager => renderTreeManager;
 
+    StateRepository IStateHost.StateRepository => StateRepository;
+
+    bool ITreeHost.UseRenderTree => useRenderTree;
+
+    VisualElement ITreeHost.RootVisualElement => root;
+
     protected StatefulEditorWindow()
     {
       _stateManager = new(this);
+      renderTreeManager = new();
       StateContext.Register(GetType().Name, _stateRepository);
       StateHostLocator.Register(this);
     }
@@ -87,7 +82,9 @@ namespace AbandonedCrypt.EditorState
 
     protected void AddComponent(EditorComponent component)
     {
-      renderTreeManager.Nodes.Add(component);
+      component.RootStateHost = this;
+      component.Initialize();
+      RenderTreeManager.AddNode(component);
     }
 
     private void OnDestroy()
@@ -107,7 +104,10 @@ namespace AbandonedCrypt.EditorState
       reRenderHook?.Invoke();
       rootVisualElement.Clear();
       rootVisualElement.Add(m_VisualTreeAsset.Instantiate());
-      Render();
+      if (useRenderTree)
+        RenderTreeManager.InitiateRender();
+      else
+        Render();
     }
 
     /// <summary>
@@ -118,13 +118,21 @@ namespace AbandonedCrypt.EditorState
     {
       if (uxmlSource != "")
       {
+        // TODO: Error Handling
         m_VisualTreeAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/Editor/PopupExample.uxml");
         m_VisualTreeAsset.CloneTree(rootVisualElement);
       }
       root = rootVisualElement;
+      renderTreeManager.Initialize(this);
       Init();
       rootVisualElement.Add(m_VisualTreeAsset.Instantiate());
-      Render();
+      if (useRenderTree)
+      {
+        Render();
+        RenderTreeManager.InitiateRender();
+      }
+      else
+        Render();
     }
 
     /// <summary>
@@ -161,6 +169,11 @@ namespace AbandonedCrypt.EditorState
     void IStateHost.ReRender()
     {
       ReRender();
+    }
+
+    void ITreeHost.AddComponent(IRenderTreeNode component)
+    {
+      AddComponent((EditorComponent)component);
     }
   }
 }

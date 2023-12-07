@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using UnityEngine.UIElements;
 
 namespace AbandonedCrypt.EditorState
 {
-  public abstract class TreeComponent : IRenderTreeNode
+  public abstract class TreeComponent : IRenderTreeNode, IComponentStateHost
   {
     internal Guid Guid { get; } = Guid.NewGuid();
 
@@ -13,29 +14,45 @@ namespace AbandonedCrypt.EditorState
     internal List<IRenderTreeNode> StubNodes { get; } = new();
 
     internal bool IsDirty { get; set; }
+
     internal VisualElement renderedComponent;
+    internal List<IStateVar> stateVars = new();
 
-    protected VisualElement root;
+    internal IStateHost RootStateHost { get; set; }
 
-    VisualElement IRenderTreeNode.rootVisualElement => root;
+    // ! we attach the renderedElement to this! we do not manipulate it or return it as part of renderedElement
+    internal VisualElement root;
+
+    protected int HierarchyDepth { get; private set; }
+    protected VisualElement component = new();
+
+    protected Action reRenderHook;
+
+    VisualElement IRenderTreeNode.RootVisualElement { get => root; set => root = value; }
+    VisualElement IRenderTreeNode.RenderedComponent => renderedComponent;
+
     IRenderTreeNode IRenderTreeNode.Parent { get => Parent; set => Parent = value; }
     List<IRenderTreeNode> IRenderTreeNode.Children { get => Children; }
 
     bool IRenderTreeNode.IsDirty => IsDirty;
     Guid IRenderTreeNode.Guid => Guid;
 
-    public TreeComponent(string rootElementName) : this()
-    {
-      GetRootVisualElement(rootElementName);
-    }
+    IStateHost IComponentStateHost.RootStateHost { get => RootStateHost; set => RootStateHost = value; }
+    List<IStateVar> IComponentStateHost.StateVars => stateVars;
 
-    public TreeComponent(VisualElement componentRoot) : this()
+    int IRenderTreeNode.HierarchyDepth => HierarchyDepth;
+
+    protected TreeComponent(VisualElement componentRoot) : this()
     {
       ValidateComponentRoot(componentRoot);
       root = componentRoot;
     }
 
     internal TreeComponent()
+    {
+    }
+
+    internal void Initialize()
     {
       Init();
       InitialRender();
@@ -53,20 +70,20 @@ namespace AbandonedCrypt.EditorState
     protected void AddComponent(TreeComponent component)
     {
       component.Parent = this;
+      component.RootStateHost = RootStateHost;
       Children.Add(component);
-    }
-
-    private void GetRootVisualElement(string rootElementName)
-    {
-      root = Parent.rootVisualElement.Q<VisualElement>(rootElementName);
-      ValidateComponentRoot(root);
     }
 
     private void ValidateComponentRoot(VisualElement componentRoot)
     {
       if (componentRoot == null)
         throw new ComponentRootNotFoundException($"The provided VisualElement could not be found in the parent element tree.");
-      if (componentRoot.GetDepth() >= Parent.rootVisualElement.GetDepth())
+
+      HierarchyDepth = componentRoot.GetDepth();
+
+      if (Parent == null) return;
+
+      if (HierarchyDepth >= Parent.RootVisualElement.GetDepth())
         throw new ComponentRootHierarchyException(
           "Invalid Component Hierarchy: The root element of a component must be a descendant of the parent component's root element.\n" +
           "The current component root element is positioned higher in the element tree than its parent component. " +
@@ -76,7 +93,9 @@ namespace AbandonedCrypt.EditorState
 
     private void OnDestroy()
     {
-      _ = Parent.Children.RemoveAll(child => Guid.Equals(child.Guid, Guid));
+      if (Parent != null)
+        _ = Parent.Children.RemoveAll(child => Guid.Equals(child.Guid, Guid));
+      stateVars.ForEach(sv => sv.UnsubscribeComponent(this));
     }
 
     internal void InitialRender()
@@ -88,8 +107,10 @@ namespace AbandonedCrypt.EditorState
     internal void ReRender()
     {
       ClearTree();
+      reRenderHook?.Invoke();
       renderedComponent = Render();
       // GetStubNodes();
+      IsDirty = false;
     }
 
     /// <summary>
@@ -98,12 +119,13 @@ namespace AbandonedCrypt.EditorState
     internal void SetDirty()
     {
       IsDirty = true;
-      TraverseDown((node) => node.SetDirty());
+      //TraverseDown((node) => node.SetDirty());
     }
 
     private void ClearTree()
     {
-      root.Clear();
+      root.Remove(component);
+      component.Clear();
     }
 
     private void GetStubNodes()
@@ -126,5 +148,10 @@ namespace AbandonedCrypt.EditorState
 
     void IRenderTreeNode.ReRender() => ReRender();
     void IRenderTreeNode.SetDirty() => SetDirty();
+
+    /// <summary>
+    /// Only called by reflection instantiation to emulate internal constructor.
+    /// </summary>
+    void IRenderTreeNode.Initialize() => Initialize();
   }
 }
