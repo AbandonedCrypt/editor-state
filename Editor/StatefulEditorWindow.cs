@@ -107,7 +107,7 @@ namespace AbandonedCrypt.EditorState
     {
       if (uxmlSource != "")
       {
-        m_VisualTreeAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/Editor/PopupExample.uxml");
+        m_VisualTreeAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(uxmlSource);
         m_VisualTreeAsset.CloneTree(rootVisualElement);
       }
       root = rootVisualElement;
