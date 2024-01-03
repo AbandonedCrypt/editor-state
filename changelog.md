@@ -8,6 +8,11 @@
 
 - Remove early exit on `StateVar.Set()` if the set-value is equal to the current one.
 
+**Hotfixes**
+
+- Removed hardcoded placeholder UXML path for `uxmlSource`
+- Fixed blank editor window NullRef due to missing VisualTreeAsset when not created through wizard.
+
 **Breaking Changes**
 
 - /
