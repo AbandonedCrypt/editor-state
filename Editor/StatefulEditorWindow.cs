@@ -9,14 +9,6 @@ namespace AbandonedCrypt.EditorState
   /// Stateful editor abstraction allowing for <b>StateVar</b> to be used and controlling re-renders.<br/>
   /// Also provides a more intuitive editor logic structure.<br/><br/>
   /// <i>Replaces</i> <b>EditorWindow</b> <i>in your custom editor inheritance.</i>
-  /// <br/><br/><br/>
-  /// <i>!Developers notice!<br/>
-  /// This is a highly experimental, rudimentary, personal project, aimed at a specific use-case.<br/>
-  /// There is no focus on safety, best practices or any consideration of possible side effects.<br/>
-  /// It is merely a highly specific tool to aid a personal use case.</i><br/><br/>
-  /// <b>Using it as a general purpose solution is almost guaranteed to run you into bugs galore,<br/>
-  /// as it is not tested against any other editor-flows than my own.
-  /// </b>
   /// </summary>
   public abstract class StatefulEditorWindow : EditorWindow, IStateHost
   {
@@ -112,7 +104,7 @@ namespace AbandonedCrypt.EditorState
       }
       root = rootVisualElement;
       Init();
-      rootVisualElement.Add(m_VisualTreeAsset.Instantiate());
+      rootVisualElement.Add(m_VisualTreeAsset?.Instantiate() ?? null);
       Render();
     }
 
